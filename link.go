@@ -35,9 +35,9 @@ func nodeDFS(n *html.Node, links chan Link, depth int) {
 	if n.Type == html.ElementNode && n.DataAtom == atom.A {
 		for _, attr := range n.Attr {
 			if attr.Key == "href" {
-				fragments := make([]string, 0)
+				textCh := make(chan string)
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					parseInnerHTML(c, &fragments)
+					go extractInnerText(c, textCh)
 				}
 				link := Link{attr.Val, strings.Join(fragments, " ")}
 				*links = append(*links, link)
@@ -51,11 +51,11 @@ func nodeDFS(n *html.Node, links chan Link, depth int) {
 	done <- true
 }
 
-func extractInnerText(n *html.Node, fragments *[]string) {
+func extractInnerText(n *html.Node, textCh chan string) {
 	if n.Type == html.TextNode {
-		*fragments = append(*fragments, strings.TrimSpace(n.Data))
+		textCh <- strings.TrimSpace(n.Data)
 	}
-	if n.Type == html.ElementNode {
-		extractInnerText(n, fragments)
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		extractInnerText(n, textCh)
 	}
 }
