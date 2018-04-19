@@ -8,54 +8,50 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// Link represents a subset of information from an HTML <a> tag.
 type Link struct {
-	HREF string
-	Text string
+	HREF string // Value of the href attribute
+	Text string // Any text in the innerHTML of the tag with HTML stripped
 }
 
+// ExtractLinks reads text from r and returns the Links found in a slice.
+// It searches via depth-first search and does not parse nested <a> tags.
 func ExtractLinks(r io.Reader) ([]Link, error) {
 	node, err := html.Parse(r)
 	if err != nil {
 		return nil, err
 	}
 
-	linkCh := make(chan Link)
-	done := make(chan bool)
-
-	go nodeDFS(node, linkCh, 0)
-
 	links := make([]Link, 0)
-	for link := range linkCh {
-		links = append(links, link)
-	}
+
+	nodeDFS(node, &links)
+
 	return links, nil
 }
 
-func nodeDFS(n *html.Node, links chan Link, depth int) {
+func nodeDFS(n *html.Node, links *[]Link) {
 	if n.Type == html.ElementNode && n.DataAtom == atom.A {
 		for _, attr := range n.Attr {
 			if attr.Key == "href" {
-				textCh := make(chan string)
+				text := make([]string, 0)
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					go extractInnerText(c, textCh)
+					extractInnerText(c, &text)
 				}
-				link := Link{attr.Val, strings.Join(fragments, " ")}
+				link := Link{attr.Val, strings.TrimSpace(strings.Join(text, " "))}
 				*links = append(*links, link)
-				return
 			}
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		nodeDFS(c, links, depth+1)
+		nodeDFS(c, links)
 	}
-	done <- true
 }
 
-func extractInnerText(n *html.Node, textCh chan string) {
+func extractInnerText(n *html.Node, text *[]string) {
 	if n.Type == html.TextNode {
-		textCh <- strings.TrimSpace(n.Data)
+		*text = append(*text, strings.TrimSpace(n.Data))
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		extractInnerText(n, textCh)
+		extractInnerText(c, text)
 	}
 }

@@ -98,10 +98,50 @@ func TestExtractLinks(t *testing.T) {
 			},
 			Link{
 				"https://github.com/gophercises",
-				"Gophercises is on Github!",
+				"Gophercises is on Github !",
 			},
 		}
 		file, err := os.Open("examples/ex2.html")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got, err := ExtractLinks(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !equalLinks(want, got) {
+			t.Errorf("want: '%v', got: '%v'", want, got)
+		}
+	})
+
+	t.Run("Parses ex3 correctly", func(t *testing.T) {
+		want := []Link{
+			Link{"#", "Login"},
+			Link{"/lost", "Lost? Need help?"},
+			Link{"https://twitter.com/marcusolsson", "@marcusolsson"},
+		}
+		file, err := os.Open("examples/ex3.html")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got, err := ExtractLinks(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !equalLinks(want, got) {
+			t.Errorf("want: '%v', got: '%v'", want, got)
+		}
+	})
+
+	t.Run("Parses ex4 correctly", func(t *testing.T) {
+		want := []Link{
+			Link{"/dog-cat", "dog cat"},
+		}
+		file, err := os.Open("examples/ex4.html")
 		if err != nil {
 			t.Fatal(err)
 		}
