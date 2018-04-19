@@ -28,17 +28,21 @@ func equalLinks(a, b []Link) bool {
 	return true
 }
 
+func assertEqualLinks(t *testing.T, want, got []Link) {
+	if !equalLinks(want, got) {
+		t.Errorf("want: '%+v', got: '%+v'", want, got)
+	}
+}
+
 func TestExtractLinks(t *testing.T) {
 	t.Run("Return an empty slice for an empty input", func(t *testing.T) {
 		want := make([]Link, 0)
 		got, err := ExtractLinks(strings.NewReader(""))
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Returns one link", func(t *testing.T) {
@@ -48,9 +52,7 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Returns two links", func(t *testing.T) {
@@ -66,9 +68,7 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Parses ex1 correctly", func(t *testing.T) {
@@ -85,9 +85,7 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Parses ex2 correctly", func(t *testing.T) {
@@ -111,9 +109,7 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Parses ex3 correctly", func(t *testing.T) {
@@ -132,9 +128,7 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 
 	t.Run("Parses ex4 correctly", func(t *testing.T) {
@@ -151,8 +145,6 @@ func TestExtractLinks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !equalLinks(want, got) {
-			t.Errorf("want: '%v', got: '%v'", want, got)
-		}
+		assertEqualLinks(t, want, got)
 	})
 }
